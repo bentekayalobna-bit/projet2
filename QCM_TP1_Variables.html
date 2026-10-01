@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QCM — TP N°1 : les variables en Python</title>
+<style>
+  :root{
+    --ink:#1B2430;
+    --ink-soft:#4B5563;
+    --paper:#F6F1E7;
+    --card:#FFFFFF;
+    --line:#E4DCC8;
+    --accent:#B45309;
+    --accent-dark:#8A3F08;
+    --accent-soft:#F3E3CE;
+    --good:#1E6E4E;
+    --good-soft:#E3F2E9;
+    --bad:#B3261E;
+    --bad-soft:#FBE7E5;
+    --navy:#1B2A41;
+    --mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    --serif: Georgia, 'Iowan Old Style', 'Times New Roman', serif;
+    --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ height:100%; }
+  body{
+    margin:0;
+    font-family:var(--sans);
+    background:
+      radial-gradient(1200px 500px at 10% -10%, #fffef9 0%, transparent 60%),
+      var(--paper);
+    color:var(--ink);
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:32px 16px 60px;
+  }
+  .wrap{ width:100%; max-width:760px; }
+
+  header.top{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:22px;
+    flex-wrap:wrap;
+  }
+  header.top .brand{
+    font-family:var(--serif);
+    font-size:15px;
+    color:var(--ink-soft);
+    letter-spacing:.02em;
+  }
+  header.top .brand b{ color:var(--navy); }
+  header.top .module{
+    font-family:var(--mono);
+    font-size:12px;
+    color:var(--accent-dark);
+    background:var(--accent-soft);
+    padding:4px 10px;
+    border-radius:3px;
+  }
+
+  /* ---------- Cartes générales ---------- */
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:10px;
+    box-shadow:0 1px 0 rgba(27,36,48,.04);
+    padding:36px;
+  }
+  @media (max-width:560px){ .card{ padding:22px; } }
+
+  h1.title{
+    font-family:var(--serif);
+    font-weight:700;
+    font-size:32px;
+    line-height:1.15;
+    margin:0 0 6px;
+    color:var(--navy);
+  }
+  p.subtitle{
+    margin:0 0 26px;
+    color:var(--ink-soft);
+    font-size:15.5px;
+    max-width:52ch;
+  }
+
+  /* ---------- Écran de démarrage ---------- */
+  .rule{
+    display:flex;
+    gap:10px;
+    align-items:flex-start;
+    padding:10px 0;
+    border-top:1px solid var(--line);
+    font-size:14.5px;
+    color:var(--ink-soft);
+  }
+  .rule:first-of-type{ border-top:none; }
+  .rule .num{
+    font-family:var(--mono);
+    color:var(--accent);
+    font-size:13px;
+    padding-top:1px;
+  }
+  .rules-box{ margin:22px 0 28px; }
+
+  .field-row{ display:flex; gap:14px; flex-wrap:wrap; margin-bottom:22px; }
+  .field{ flex:1 1 220px; display:flex; flex-direction:column; gap:6px; }
+  .field label{ font-size:13px; color:var(--ink-soft); font-weight:600; }
+  .field input{
+    font-size:16px;
+    padding:12px 13px;
+    border:1.5px solid var(--line);
+    border-radius:7px;
+    font-family:var(--sans);
+    background:#FCFAF5;
+    color:var(--ink);
+  }
+  .field input:focus{
+    outline:none;
+    border-color:var(--accent);
+    background:#fff;
+  }
+  .error-msg{
+    color:var(--bad);
+    font-size:13.5px;
+    margin:-10px 0 18px;
+    display:none;
+  }
+
+  button{ font-family:var(--sans); cursor:pointer; }
+  .btn{
+    border:none;
+    border-radius:7px;
+    padding:13px 24px;
+    font-size:15.5px;
+    font-weight:600;
+    background:var(--accent);
+    color:#fff;
+    transition:background .15s ease, transform .1s ease;
+  }
+  .btn:hover{ background:var(--accent-dark); }
+  .btn:active{ transform:translateY(1px); }
+  .btn.ghost{
+    background:transparent;
+    color:var(--navy);
+    border:1.5px solid var(--line);
+  }
+  .btn.ghost:hover{ background:#F1ECDF; }
+  .btn:disabled{ opacity:.45; cursor:not-allowed; }
+  .btn.block{ width:100%; }
+
+  /* ---------- Écran quiz ---------- */
+  #screen-quiz{ display:none; }
+  .quiz-shell{ display:flex; flex-direction:column; gap:16px; }
+
+  .status-bar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px;
+    background:var(--navy);
+    color:#fff;
+    border-radius:10px;
+    padding:14px 18px;
+    flex-wrap:wrap;
+  }
+  .status-bar .prog{ font-size:13.5px; color:#C9D3E0; }
+  .status-bar .prog b{ color:#fff; }
+  .timer{
+    font-family:var(--mono);
+    font-size:20px;
+    font-weight:700;
+    letter-spacing:.03em;
+    background:rgba(255,255,255,.08);
+    padding:6px 14px;
+    border-radius:6px;
+  }
+  .timer.warn{ background:var(--bad); animation:pulse 1s infinite; }
+  @keyframes pulse{ 0%,100%{ opacity:1;} 50%{ opacity:.55;} }
+
+  .nav-grid{
+    display:grid;
+    grid-template-columns:repeat(10, 1fr);
+    gap:6px;
+  }
+  @media (max-width:560px){ .nav-grid{ grid-template-columns:repeat(5,1fr); } }
+  .nav-grid button{
+    aspect-ratio:1;
+    border-radius:6px;
+    border:1.5px solid var(--line);
+    background:#FCFAF5;
+    color:var(--ink-soft);
+    font-size:13px;
+    font-family:var(--mono);
+    font-weight:600;
+  }
+  .nav-grid button.answered{ background:var(--good-soft); border-color:#BFE0CC; color:var(--good); }
+  .nav-grid button.current{ border-color:var(--accent); box-shadow:0 0 0 2px var(--accent-soft) inset; color:var(--accent-dark); }
+
+  .q-difficulty{
+    display:inline-block;
+    font-family:var(--mono);
+    font-size:11.5px;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    padding:3px 9px;
+    border-radius:4px;
+    margin-bottom:14px;
+  }
+  .q-difficulty.moyen{ background:#FDF0DA; color:#8A5A00; }
+  .q-difficulty.difficile{ background:#FBE3E1; color:var(--bad); }
+
+  .q-text{
+    font-size:18px;
+    line-height:1.5;
+    color:var(--ink);
+    margin:0 0 16px;
+    font-weight:600;
+  }
+  .q-code{
+    background:#1B2430;
+    color:#E9EEF3;
+    font-family:var(--mono);
+    font-size:14px;
+    padding:14px 16px;
+    border-radius:7px;
+    margin:0 0 18px;
+    overflow-x:auto;
+    white-space:pre;
+    line-height:1.55;
+  }
+
+  .options{ display:flex; flex-direction:column; gap:10px; margin-bottom:26px; }
+  .option{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:13px 15px;
+    border:1.5px solid var(--line);
+    border-radius:8px;
+    background:#FCFAF5;
+    font-size:15px;
+    text-align:left;
+  }
+  .option:hover{ border-color:#D8CBA6; }
+  .option .letter{
+    width:24px; height:24px;
+    border-radius:50%;
+    border:1.5px solid var(--line);
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--mono);
+    font-size:12px;
+    color:var(--ink-soft);
+    flex:none;
+  }
+  .option.selected{ border-color:var(--accent); background:var(--accent-soft); }
+  .option.selected .letter{ background:var(--accent); border-color:var(--accent); color:#fff; }
+  .option code{ font-family:var(--mono); font-size:14px; background:#EFE9D9; padding:1px 5px; border-radius:3px; }
+
+  .quiz-actions{
+    display:flex;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+  .quiz-actions .left, .quiz-actions .right{ display:flex; gap:10px; }
+
+  /* ---------- Écran résultat ---------- */
+  #screen-result{ display:none; }
+  .score-hero{
+    text-align:center;
+    padding:8px 0 26px;
+    border-bottom:1px solid var(--line);
+    margin-bottom:24px;
+  }
+  .score-hero .who{
+    font-family:var(--serif);
+    font-size:20px;
+    color:var(--ink-soft);
+    margin-bottom:6px;
+  }
+  .score-hero .who b{ color:var(--navy); }
+  .score-hero .big{
+    font-family:var(--serif);
+    font-size:64px;
+    font-weight:700;
+    color:var(--navy);
+    line-height:1;
+    margin:6px 0;
+  }
+  .score-hero .big span{ font-size:28px; color:var(--ink-soft); font-weight:400; }
+  .score-hero .verdict{
+    display:inline-block;
+    margin-top:10px;
+    font-family:var(--mono);
+    font-size:13px;
+    padding:5px 14px;
+    border-radius:20px;
+  }
+  .verdict.v-good{ background:var(--good-soft); color:var(--good); }
+  .verdict.v-mid{ background:#FDF0DA; color:#8A5A00; }
+  .verdict.v-low{ background:var(--bad-soft); color:var(--bad); }
+
+  .breakdown{ display:flex; gap:14px; margin-bottom:26px; flex-wrap:wrap; }
+  .breakdown .stat{
+    flex:1 1 140px;
+    background:#FCFAF5;
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:14px 16px;
+  }
+  .breakdown .stat .n{ font-family:var(--serif); font-size:26px; color:var(--navy); font-weight:700; }
+  .breakdown .stat .l{ font-size:12.5px; color:var(--ink-soft); }
+
+  table.review{ width:100%; border-collapse:collapse; font-size:13.5px; }
+  table.review th, table.review td{
+    text-align:left;
+    padding:9px 10px;
+    border-bottom:1px solid var(--line);
+    vertical-align:top;
+  }
+  table.review th{ font-size:11.5px; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-soft); }
+  table.review td.ok{ color:var(--good); font-weight:700; }
+  table.review td.ko{ color:var(--bad); font-weight:700; }
+  table.review .mono{ font-family:var(--mono); font-size:12.5px; }
+
+  footer.foot{
+    text-align:center;
+    color:var(--ink-soft);
+    font-size:12.5px;
+    margin-top:28px;
+  }
+
+  .sr-only{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="brand">ISET de Ksar Hellal — <b>Licence Appliquée en Marketing Digital</b></div>
+    <div class="module">TP N°1 · Les variables en Python</div>
+  </header>
+
+  <!-- ================= ÉCRAN 1 : DÉMARRAGE ================= -->
+  <section id="screen-start" class="card">
+    <h1 class="title">QCM — Les variables en Python</h1>
+    <p class="subtitle">20 questions (10 de difficulté moyenne, 10 de difficulté élevée) portant sur le contenu du TP N°1 : déclaration, types, saisie, conversions et opérateurs.</p>
+
+    <div class="rules-box">
+      <div class="rule"><span class="num">01</span><span>Vous disposez de <strong>10 minutes</strong> à partir du démarrage. Le temps restant est affiché en permanence.</span></div>
+      <div class="rule"><span class="num">02</span><span>L'ordre des questions et celui des réponses sont tirés au sort à chaque ouverture de cette page.</span></div>
+      <div class="rule"><span class="num">03</span><span>Vous pouvez revenir sur une question déjà traitée et modifier votre réponse à tout moment avant de terminer.</span></div>
+      <div class="rule"><span class="num">04</span><span>À l'expiration du temps, le QCM est automatiquement corrigé avec les réponses déjà données.</span></div>
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label for="in-prenom">Prénom</label>
+        <input id="in-prenom" type="text" autocomplete="given-name" placeholder="Votre prénom">
+      </div>
+      <div class="field">
+        <label for="in-nom">Nom</label>
+        <input id="in-nom" type="text" autocomplete="family-name" placeholder="Votre nom">
+      </div>
+    </div>
+    <div class="error-msg" id="start-error">Merci de renseigner votre prénom et votre nom avant de commencer.</div>
+
+    <button class="btn block" id="btn-start">Commencer le QCM</button>
+  </section>
+
+  <!-- ================= ÉCRAN 2 : QUIZ ================= -->
+  <section id="screen-quiz">
+    <div class="quiz-shell">
+      <div class="status-bar">
+        <div class="prog">Question <b id="prog-current">1</b> / 20 &nbsp;·&nbsp; <b id="prog-answered">0</b> répondue(s)</div>
+        <div class="timer" id="timer">10:00</div>
+      </div>
+
+      <div class="nav-grid" id="nav-grid" role="tablist" aria-label="Navigation entre les questions"></div>
+
+      <div class="card">
+        <span class="q-difficulty" id="q-difficulty">Moyen</span>
+        <p class="q-text" id="q-text"></p>
+        <pre class="q-code" id="q-code" style="display:none;"></pre>
+        <div class="options" id="q-options"></div>
+
+        <div class="quiz-actions">
+          <div class="left">
+            <button class="btn ghost" id="btn-prev">&larr; Précédente</button>
+            <button class="btn ghost" id="btn-next">Suivante &rarr;</button>
+          </div>
+          <div class="right">
+            <button class="btn" id="btn-submit">Terminer le QCM</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= ÉCRAN 3 : RÉSULTAT ================= -->
+  <section id="screen-result" class="card">
+    <div class="score-hero">
+      <div class="who">Résultat de <b id="res-name">—</b></div>
+      <div class="big"><span id="res-score">0</span><span> / 20</span></div>
+      <span class="verdict" id="res-verdict">—</span>
+    </div>
+
+    <div class="breakdown">
+      <div class="stat"><div class="n" id="stat-correct">0</div><div class="l">Bonnes réponses</div></div>
+      <div class="stat"><div class="n" id="stat-wrong">0</div><div class="l">Réponses incorrectes</div></div>
+      <div class="stat"><div class="n" id="stat-blank">0</div><div class="l">Questions sans réponse</div></div>
+      <div class="stat"><div class="n" id="stat-time">—</div><div class="l">Temps utilisé</div></div>
+    </div>
+
+    <table class="review">
+      <thead>
+        <tr><th>#</th><th>Difficulté</th><th>Votre réponse</th><th>Réponse correcte</th><th>Résultat</th></tr>
+      </thead>
+      <tbody id="review-body"></tbody>
+    </table>
+
+    <footer class="foot">Vous pouvez fermer cette page. Communiquez votre note à votre enseignante si demandé.</footer>
+  </section>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ============================================================
+     1. BANQUE DE QUESTIONS — TP N°1 : les variables en Python
+     ============================================================ */
+  var BANK = [
+    // ---------------------- DIFFICULTÉ MOYENNE (10) ----------------------
+    {
+      difficulty: "moyen",
+      text: "Quelle instruction permet de déclarer correctement une variable en Python ?",
+      options: ["variable := 5", "var x = 5", "x = 5", "int x = 5"],
+      correct: "x = 5"
+    },
+    {
+      difficulty: "moyen",
+      text: "Parmi les noms suivants, lequel constitue un nom de variable valide en Python ?",
+      options: ["2age", "nom-client", "prix_total", "for"],
+      correct: "prix_total"
+    },
+    {
+      difficulty: "moyen",
+      text: "Quel est le type de la variable créée par l'instruction ci-dessous ?",
+      code: "x = 3.14",
+      options: ["int", "float", "str", "bool"],
+      correct: "float"
+    },
+    {
+      difficulty: "moyen",
+      text: "Que retourne toujours la fonction input(), quelle que soit la valeur saisie ?",
+      options: ["Un nombre entier", "Un nombre réel", "Une chaîne de caractères", "Une valeur booléenne"],
+      correct: "Une chaîne de caractères"
+    },
+    {
+      difficulty: "moyen",
+      text: "Quelle fonction permet de connaître le type d'une variable ?",
+      options: ["kind()", "typeof()", "type()", "class()"],
+      correct: "type()"
+    },
+    {
+      difficulty: "moyen",
+      text: "Quel opérateur permet d'obtenir le reste d'une division entière ?",
+      options: ["/", "//", "%", "**"],
+      correct: "%"
+    },
+    {
+      difficulty: "moyen",
+      text: "Qu'affiche l'instruction suivante dans la console ?",
+      code: 'print("Age :", 20)',
+      options: ["Une erreur", "Age : 20", "Age:20", '"Age :" 20'],
+      correct: "Age : 20"
+    },
+    {
+      difficulty: "moyen",
+      text: "Quelle instruction convertit correctement une saisie utilisateur en nombre entier ?",
+      options: ["input(int())", "int(input())", "str(int())", "float(str())"],
+      correct: "int(input())"
+    },
+    {
+      difficulty: "moyen",
+      text: "Quelle est la valeur affichée par l'instruction suivante ?",
+      code: "print(7 // 2)",
+      options: ["3.5", "3", "4", "1"],
+      correct: "3"
+    },
+    {
+      difficulty: "moyen",
+      text: "Quelle syntaxe correspond à une f-string en Python ?",
+      options: ['"Bonjour %s" % nom', '"Bonjour " + nom', 'f"Bonjour {nom}"', 'format("Bonjour", nom)'],
+      correct: 'f"Bonjour {nom}"'
+    },
+
+    // ---------------------- DIFFICULTÉ ÉLEVÉE (10) ----------------------
+    {
+      difficulty: "difficile",
+      text: "Quel est le résultat affiché par le programme suivant ?",
+      code: 'a = "5"\nb = 2\nprint(a * b)',
+      options: ["10", '"55"', "Une erreur (TypeError)", "7"],
+      correct: '"55"'
+    },
+    {
+      difficulty: "difficile",
+      text: "Que se passe-t-il lors de l'exécution du code suivant, si l'utilisateur saisit 20 ?",
+      code: 'age = input("Age : ")\nprint(age + 1)',
+      options: ["Le programme affiche 21", "Une erreur de type TypeError se produit", "Le programme affiche \"201\"", "Le programme affiche 0"],
+      correct: "Une erreur de type TypeError se produit"
+    },
+    {
+      difficulty: "difficile",
+      text: "Quel est le type de la variable e après l'exécution de l'instruction suivante ?",
+      code: 'e = "2026"',
+      options: ["int", "float", "str", "bool"],
+      correct: "str"
+    },
+    {
+      difficulty: "difficile",
+      text: "Laquelle de ces expressions produit un résultat de type float ?",
+      options: ["10 // 2", "10 % 2", "10 / 2", "10 ** 2"],
+      correct: "10 / 2"
+    },
+    {
+      difficulty: "difficile",
+      text: "Quelle est la valeur de x après l'exécution du programme suivant ?",
+      code: "x = 10\ny = 3\nx, y = y, x",
+      options: ["10", "3", "13", "Une erreur se produit"],
+      correct: "3"
+    },
+    {
+      difficulty: "difficile",
+      text: "Selon la convention d'écriture usuelle en Python, comment reconnaît-on une constante ?",
+      options: ["Elle est déclarée avec le mot-clé const", "Son nom est écrit entièrement en majuscules", "Elle est obligatoirement de type float", "Elle est créée à l'intérieur d'une boucle"],
+      correct: "Son nom est écrit entièrement en majuscules"
+    },
+    {
+      difficulty: "difficile",
+      text: "Qu'affiche l'instruction suivante ?",
+      code: "print(type(True))",
+      options: ["<class 'int'>", "<class 'bool'>", "<class 'str'>", "Une erreur se produit"],
+      correct: "<class 'bool'>"
+    },
+    {
+      difficulty: "difficile",
+      text: "Que produit l'exécution du programme suivant ?",
+      code: 'nom = "Ali"\nage = 20\nprint(nom + age)',
+      options: ['Affiche "Ali20"', "Une erreur de type TypeError se produit", 'Affiche "20Ali"', "Une erreur de syntaxe se produit avant l'exécution"],
+      correct: "Une erreur de type TypeError se produit"
+    },
+    {
+      difficulty: "difficile",
+      text: "Laquelle de ces instructions affiche exactement 3.0 (et non 3) ?",
+      options: ["print(6 // 2)", "print(6 % 2)", "print(6 / 2)", "print(6 ** 2)"],
+      correct: "print(6 / 2)"
+    },
+    {
+      difficulty: "difficile",
+      text: "Quel est le résultat de l'instruction suivante ?",
+      code: "print(round(3.14159, 2))",
+      options: ["3.1", "3.14", "3.142", "3.15"],
+      correct: "3.14"
+    }
+  ];
+
+  var TOTAL_Q = BANK.length;          // 20
+  var DURATION_SECONDS = 10 * 60;     // 10 minutes
+
+  /* ============================================================
+     2. OUTILS
+     ============================================================ */
+  function shuffle(arr){
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--){
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+    }
+    return a;
+  }
+  function escapeHtml(s){
+    return String(s)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+  function pad2(n){ return n < 10 ? "0" + n : "" + n; }
+
+  /* ============================================================
+     3. ÉTAT
+     ============================================================ */
+  var state = {
+    student: { prenom: "", nom: "" },
+    questions: [],       // copie mélangée de BANK, chaque item avec options mélangées
+    answers: {},          // index question -> texte de la réponse choisie
+    current: 0,
+    secondsLeft: DURATION_SECONDS,
+    timerId: null,
+    finished: false
+  };
+
+  function buildQuestions(){
+    var picked = shuffle(BANK);
+    state.questions = picked.map(function(q){
+      return {
+        difficulty: q.difficulty,
+        text: q.text,
+        code: q.code || null,
+        options: shuffle(q.options),
+        correct: q.correct
+      };
+    });
+  }
+
+  /* ============================================================
+     4. ÉCRANS
+     ============================================================ */
+  var elStart = document.getElementById("screen-start");
+  var elQuiz  = document.getElementById("screen-quiz");
+  var elResult= document.getElementById("screen-result");
+
+  function showScreen(which){
+    elStart.style.display  = which === "start"  ? "block" : "none";
+    elQuiz.style.display   = which === "quiz"   ? "block" : "none";
+    elResult.style.display = which === "result" ? "block" : "none";
+  }
+
+  /* ---------- Démarrage ---------- */
+  document.getElementById("btn-start").addEventListener("click", function(){
+    var prenom = document.getElementById("in-prenom").value.trim();
+    var nom = document.getElementById("in-nom").value.trim();
+    var err = document.getElementById("start-error");
+    if (!prenom || !nom){
+      err.style.display = "block";
+      return;
+    }
+    err.style.display = "none";
+    state.student.prenom = prenom;
+    state.student.nom = nom;
+    buildQuestions();
+    state.answers = {};
+    state.current = 0;
+    state.secondsLeft = DURATION_SECONDS;
+    state.finished = false;
+    buildNavGrid();
+    renderQuestion();
+    startTimer();
+    showScreen("quiz");
+  });
+
+  /* ---------- Minuterie ---------- */
+  var elTimer = document.getElementById("timer");
+  function startTimer(){
+    if (state.timerId) clearInterval(state.timerId);
+    updateTimerDisplay();
+    state.timerId = setInterval(function(){
+      state.secondsLeft--;
+      if (state.secondsLeft <= 0){
+        state.secondsLeft = 0;
+        updateTimerDisplay();
+        clearInterval(state.timerId);
+        finishQuiz();
+        return;
+      }
+      updateTimerDisplay();
+    }, 1000);
+  }
+  function updateTimerDisplay(){
+    var m = Math.floor(state.secondsLeft / 60);
+    var s = state.secondsLeft % 60;
+    elTimer.textContent = pad2(m) + ":" + pad2(s);
+    elTimer.classList.toggle("warn", state.secondsLeft <= 60);
+  }
+
+  /* ---------- Grille de navigation ---------- */
+  var elNavGrid = document.getElementById("nav-grid");
+  function buildNavGrid(){
+    elNavGrid.innerHTML = "";
+    for (var i = 0; i < TOTAL_Q; i++){
+      var b = document.createElement("button");
+      b.type = "button";
+      b.textContent = (i + 1);
+      b.setAttribute("aria-label", "Aller à la question " + (i + 1));
+      (function(idx){
+        b.addEventListener("click", function(){
+          state.current = idx;
+          renderQuestion();
+        });
+      })(i);
+      elNavGrid.appendChild(b);
+    }
+    refreshNavGrid();
+  }
+  function refreshNavGrid(){
+    var buttons = elNavGrid.querySelectorAll("button");
+    buttons.forEach(function(b, idx){
+      b.classList.toggle("current", idx === state.current);
+      b.classList.toggle("answered", state.answers.hasOwnProperty(idx));
+    });
+    var answeredCount = Object.keys(state.answers).length;
+    document.getElementById("prog-answered").textContent = answeredCount;
+    document.getElementById("prog-current").textContent = state.current + 1;
+  }
+
+  /* ---------- Rendu d'une question ---------- */
+  var elQDifficulty = document.getElementById("q-difficulty");
+  var elQText = document.getElementById("q-text");
+  var elQCode = document.getElementById("q-code");
+  var elQOptions = document.getElementById("q-options");
+  var elBtnPrev = document.getElementById("btn-prev");
+  var elBtnNext = document.getElementById("btn-next");
+
+  function renderQuestion(){
+    var q = state.questions[state.current];
+
+    elQDifficulty.textContent = q.difficulty === "moyen" ? "Difficulté moyenne" : "Difficulté élevée";
+    elQDifficulty.className = "q-difficulty " + q.difficulty;
+
+    elQText.textContent = (state.current + 1) + ". " + q.text;
+
+    if (q.code){
+      elQCode.style.display = "block";
+      elQCode.textContent = q.code;
+    } else {
+      elQCode.style.display = "none";
+      elQCode.textContent = "";
+    }
+
+    var selected = state.answers[state.current];
+    var letters = ["A", "B", "C", "D"];
+    elQOptions.innerHTML = "";
+    q.options.forEach(function(opt, i){
+      var div = document.createElement("button");
+      div.type = "button";
+      div.className = "option" + (selected === opt ? " selected" : "");
+      div.innerHTML =
+        '<span class="letter">' + letters[i] + '</span><span class="opt-text"></span>';
+      div.querySelector(".opt-text").textContent = opt;
+      div.addEventListener("click", function(){
+        state.answers[state.current] = opt;
+        renderQuestion();
+        refreshNavGrid();
+      });
+      elQOptions.appendChild(div);
+    });
+
+    elBtnPrev.disabled = state.current === 0;
+    elBtnNext.disabled = state.current === TOTAL_Q - 1;
+
+    refreshNavGrid();
+  }
+
+  elBtnPrev.addEventListener("click", function(){
+    if (state.current > 0){ state.current--; renderQuestion(); }
+  });
+  elBtnNext.addEventListener("click", function(){
+    if (state.current < TOTAL_Q - 1){ state.current++; renderQuestion(); }
+  });
+
+  /* ---------- Fin du QCM ---------- */
+  document.getElementById("btn-submit").addEventListener("click", function(){
+    var answeredCount = Object.keys(state.answers).length;
+    if (answeredCount < TOTAL_Q){
+      var remaining = TOTAL_Q - answeredCount;
+      var ok = window.confirm(
+        "Il reste " + remaining + " question(s) sans réponse. Voulez-vous terminer le QCM malgré tout ?"
+      );
+      if (!ok) return;
+    }
+    finishQuiz();
+  });
+
+  function finishQuiz(){
+    if (state.finished) return;
+    state.finished = true;
+    if (state.timerId) clearInterval(state.timerId);
+
+    var correctCount = 0, wrongCount = 0, blankCount = 0;
+    var rows = "";
+
+    state.questions.forEach(function(q, i){
+      var given = state.answers.hasOwnProperty(i) ? state.answers[i] : null;
+      var isCorrect = given !== null && given === q.correct;
+      if (given === null) blankCount++;
+      else if (isCorrect) correctCount++;
+      else wrongCount++;
+
+      rows += "<tr>" +
+        "<td>" + (i + 1) + "</td>" +
+        "<td>" + (q.difficulty === "moyen" ? "Moyenne" : "Élevée") + "</td>" +
+        "<td class='mono'>" + (given ? escapeHtml(given) : "<em>Sans réponse</em>") + "</td>" +
+        "<td class='mono'>" + escapeHtml(q.correct) + "</td>" +
+        "<td class='" + (isCorrect ? "ok" : "ko") + "'>" + (isCorrect ? "Correct" : "Incorrect") + "</td>" +
+        "</tr>";
+    });
+
+    document.getElementById("res-name").textContent = state.student.prenom + " " + state.student.nom;
+    document.getElementById("res-score").textContent = correctCount;
+    document.getElementById("stat-correct").textContent = correctCount;
+    document.getElementById("stat-wrong").textContent = wrongCount;
+    document.getElementById("stat-blank").textContent = blankCount;
+
+    var used = DURATION_SECONDS - state.secondsLeft;
+    var m = Math.floor(used / 60), s = used % 60;
+    document.getElementById("stat-time").textContent = pad2(m) + ":" + pad2(s);
+
+    var verdictEl = document.getElementById("res-verdict");
+    var pct = correctCount / TOTAL_Q;
+    var label, cls;
+    if (pct >= 0.8){ label = "Très bonne maîtrise"; cls = "v-good"; }
+    else if (pct >= 0.5){ label = "Maîtrise correcte, à consolider"; cls = "v-mid"; }
+    else { label = "Révision du TP N°1 recommandée"; cls = "v-low"; }
+    verdictEl.textContent = label;
+    verdictEl.className = "verdict " + cls;
+
+    document.getElementById("review-body").innerHTML = rows;
+
+    showScreen("result");
+  }
+
+  /* ---------- Empêcher la fermeture accidentelle pendant le quiz ---------- */
+  window.addEventListener("beforeunload", function(e){
+    if (elQuiz.style.display !== "none" && !state.finished){
+      e.preventDefault();
+      e.returnValue = "";
+    }
+  });
+
+  showScreen("start");
+})();
+</script>
+</body>
+</html>
